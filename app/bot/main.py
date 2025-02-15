@@ -14,7 +14,7 @@ async def start(message):
 
     button = KeyboardButton(
         text='Открыть веб страницу',
-        web_app=WebAppInfo(url='https://example.com')
+        web_app=WebAppInfo(url='https://github.com/KoksheLabTeam/Rinat/blob/main/app/bot/main.py')
     )
     markup = ReplyKeyboardMarkup(
         keyboard=[[button]],
