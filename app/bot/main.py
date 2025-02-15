@@ -17,7 +17,7 @@ async def start(message):
         web_app=WebAppInfo(url='https://example.com')
     )
     markup = ReplyKeyboardMarkup(
-        keyboard=[[button]],  # Клавиатура должна быть списком списков
+        keyboard=[[button]],
         resize_keyboard=True
     )
 
