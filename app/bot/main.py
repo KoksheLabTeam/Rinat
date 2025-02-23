@@ -3,7 +3,7 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, WebAppInfo
 from aiogram.filters import Command
 from aiogram import Router
 
-bot = Bot('7105803545:AAEuXRFep1TdMyM5_UI5HjcOxA_K4D3bNig')
+bot = Bot('')
 dp = Dispatcher()
 
 router = Router()
