@@ -1,23 +1,25 @@
+from sqlalchemy import DECIMAL, Column, Enum, ForeignKey, String, Table
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.core.models.base import Base
+from app.core.models.mixins.audit import AuditMixin
+from app.core.utils.enums import OrderStatus
 
-from  sqlalchemy import ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import Table, Column
 
-order_to_food = Table(
-    'order_to_food',
-    Base.metadata,
-    Column("order_id",  ForeignKey("orders.id")),  # Ссылка на таблицу orders
-    Column("food_id",  ForeignKey("foods.id"))
-)
+class Order(Base, AuditMixin):
+    __tablename__ = "orders"
 
-class Orders(Base):
-    __tablename__ = 'orders'
-    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
-    datetime: Mapped[str]
-    address: Mapped[str]
-    full_name: Mapped[str]
-    status: Mapped[str]
-    phone_number: Mapped[str]
-    total_price: Mapped[str]
+    telegram_id: Mapped[str]
+    basket_id: Mapped[int] = mapped_column(ForeignKey("baskets.id"))
 
+    address: Mapped[str] = mapped_column(String(255), nullable=False)
+    customer_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    customer_phone: Mapped[str] = mapped_column(String(20), nullable=False)
+
+    status: Mapped[str] = mapped_column(
+        Enum(OrderStatus, name="order_status"),
+        default=OrderStatus.PENDING,
+        nullable=False,
+    )
+
+    total_price: Mapped[float] = mapped_column(DECIMAL(10, 2), nullable=False)

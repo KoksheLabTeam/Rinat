@@ -1,27 +1,39 @@
-from typing import Sequence
+from typing import List
 
-from app.core.models.food import Foods
-from app.core.schemas.food import FoodCreate, FoodUpdate
-from app.core.repos.food import FoodsRepository
+from fastapi import HTTPException, status
+from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Session
+
+from app.core.models.food import Food
+from app.core.schemas.food import FoodCreate
 
 
-class UserService:
-    def __init__(self, repository: FoodsRepository):
-        self.repository = repository
+def create_food(session: Session, data: FoodCreate) -> Food:
+    food = Food(**data.model_dump())
 
-    def create(self, data: FoodCreate) -> Foods:
-        values: dict = data.model_dump()
-        return self.repository.create(values)
+    try:
+        session.add(food)
+        session.commit()
+        session.refresh(food)
+        return food
 
-    def update(self, data: FoodCreate, **filters) -> Foods:
-        values = data.model_dump(exclude_none=True, exclude_unset=True)
-        return self.repository.alter(values, **filters)
+    except SQLAlchemyError as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Ошибка базы данных.",
+        )
 
-    def delete(self, **filters) -> None:
-        return self.repository.delete(**filters)
 
-    def get_one(self, **filters) -> Foods | None:
-        return self.repository.get_one(**filters)
+def get_all_foods(session: Session) -> List[Food]:
+    statement = select(Food)
 
-    def get_all(self) -> Sequence[Foods]:
-        return self.repository.get_all()
+    try:
+        result = session.execute(statement)
+        return result.scalars().all()
+
+    except SQLAlchemyError as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Ошибка базы данных.",
+        )
