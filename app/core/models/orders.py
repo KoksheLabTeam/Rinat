@@ -1,5 +1,5 @@
-from sqlalchemy import DECIMAL, Column, Enum, ForeignKey, String, Table
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import DECIMAL, Enum, ForeignKey, String
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.models.base import Base
 from app.core.models.mixins.audit import AuditMixin

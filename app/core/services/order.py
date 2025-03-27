@@ -13,10 +13,17 @@ def create_order(session: Session, data: OrderCreate, telegram_id: str) -> Order
     if not basket:
         raise HTTPException(status_code=404, detail="Корзина не найдена")
 
+    foods = basket.foods
+
+    total_price = 0
+    for food in foods:
+        total_price += food.price
+
     order = Order(
         **data.model_dump(),
         basket_id=basket.id,
         telegram_id=telegram_id,
+        total_price=total_price,
     )
 
     try:
@@ -26,6 +33,7 @@ def create_order(session: Session, data: OrderCreate, telegram_id: str) -> Order
         return order
 
     except SQLAlchemyError as e:
+        print(e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Ошибка базы данных.",
@@ -33,15 +41,15 @@ def create_order(session: Session, data: OrderCreate, telegram_id: str) -> Order
 
 
 def get_user_order(session: Session, telegram_id: str):
-    orders = (
-        session.query(Order)
-        .options(joinedload(Order.basket).joinedload(Basket.foods))
-        .filter(Order.telegram_id == telegram_id)
-        .all()
-    )
+    order = session.query(Order).where(Order.telegram_id == telegram_id).first()
 
-    if not orders:
+    if not order:
         raise HTTPException(status_code=404, detail="Заказы не найдены")
+
+    basket = session.query(Basket).where(Basket.id == order.basket_id).first()
+
+    if not basket:
+        raise HTTPException(status_code=404, detail="Корзина не найдена")
 
     return [
         {
@@ -59,19 +67,14 @@ def get_user_order(session: Session, telegram_id: str):
                     "description": food.description,
                     "photo": food.photo,
                 }
-                for food in order.basket.foods
+                for food in basket.foods
             ],
         }
-        for order in orders
     ]
 
 
 def get_all_orders(session: Session):
-    orders = (
-        session.query(Order)
-        .options(joinedload(Order.basket).joinedload(Basket.foods))
-        .all()
-    )
+    orders = session.query(Order).all()
 
     return [
         {
@@ -82,16 +85,6 @@ def get_all_orders(session: Session):
             "customer_phone": order.customer_phone,
             "status": order.status,
             "total_price": order.total_price,
-            "foods": [
-                {
-                    "id": food.id,
-                    "name": food.name,
-                    "price": food.price,
-                    "description": food.description,
-                    "photo": food.photo,
-                }
-                for food in order.basket.foods
-            ],
         }
         for order in orders
     ]

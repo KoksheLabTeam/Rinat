@@ -18,7 +18,7 @@ router = APIRouter(prefix="/order", tags=["Order"])
 
 
 @router.post("/")
-def create_order(
+def create_order_api(
     x_telegram_id: Annotated[str, Header()],
     data: OrderCreate,
     session: Annotated[Session, Depends(get_session)],
@@ -43,7 +43,7 @@ def get_orders(
 
 
 @router.patch("/{order_id}")
-def update_order(
+def update_order_api(
     order_id: int,
     data: OrderUpdate,
     session: Annotated[Session, Depends(get_session)],
